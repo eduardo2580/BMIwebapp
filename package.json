@@ -1,5 +1,6 @@
 {
-  "devDependencies": {
-    "typescript": "^4.9.5"
+  "devDependencies": {},
+  "overrides": {
+    "typescript": "4.9.5"
   }
 }
