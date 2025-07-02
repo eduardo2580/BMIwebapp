@@ -5,6 +5,20 @@ import NutritionalPlanDisplay from './NutritionalPlanDisplay';
 import { calculateBMR, calculateTDEE, calculateTargetCalories, calculateMacros } from './nutritionalCalculator';
 import { Button, Typography, Paper, Alert } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+/**
+ * NutritionalPlanner component generates a personalized nutritional plan based on user data,
+ * selected goal, and activity level. It validates input, calculates BMR, TDEE, target calories,
+ * and macronutrient distribution, and displays the resulting plan or error messages.
+ *
+ * @component
+ * @param {Object} props
+ * @param {Object} props.userData - The user's data for calculation.
+ * @param {number|string} props.userData.weight - The user's weight (kg).
+ * @param {number|string} props.userData.height - The user's height (cm).
+ * @param {number|string} props.userData.age - The user's age (years).
+ * @param {string} props.userData.gender - The user's gender ('male' or 'female').
+ * @returns {JSX.Element} The rendered NutritionalPlanner component.
+ */
 const NutritionalPlanner = ({ userData }) => {
   const { t } = useTranslation();
   const [goal, setGoal] = useState(t('maintenance')); // 'loss', 'gain', 'maintenance'

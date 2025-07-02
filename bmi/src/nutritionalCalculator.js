@@ -35,6 +35,13 @@ export const calculateTargetCalories = (tdee, goal) => {
 // Protein: 1.8g/kg of body weight
 // Fat: 25% of total calories
 // Carbohydrates: Remaining calories
+/**
+ * Calculates daily macronutrient requirements (protein, fat, carbs) based on target calories and body weight.
+ *
+ * @param {number} targetCalories - The total daily calorie target.
+ * @param {number} weight - The individual's body weight in kilograms.
+ * @returns {{protein: number, fat: number, carbs: number}} An object containing the calculated grams of protein, fat, and carbohydrates.
+ */
 export const calculateMacros = (targetCalories, weight) => {
   const proteinGrams = 1.8 * weight;
   const proteinCalories = proteinGrams * 4;

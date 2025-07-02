@@ -8,6 +8,11 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 
+/**
+ * The root React DOM container for rendering the application.
+ * Created by calling ReactDOM.createRoot with the DOM element having the id 'root'.
+ * @type {ReactDOM.Root}
+ */
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

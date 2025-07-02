@@ -3,6 +3,44 @@ import { createTheme } from '@mui/material/styles';
 // Example Material You-inspired theme
 // Colors can be customized further based on dynamic theming if desired,
 // but for now, a static example.
+/**
+ * Custom Material-UI theme inspired by Material You design principles.
+ *
+ * @constant
+ * @type {import('@mui/material/styles').Theme}
+ * @property {Object} palette - Defines the color palette for the application.
+ * @property {Object} palette.primary - Primary color settings.
+ * @property {string} palette.primary.main - Main primary color (#6750A4).
+ * @property {Object} palette.secondary - Secondary color settings.
+ * @property {string} palette.secondary.main - Main secondary color (#7D5260).
+ * @property {Object} palette.background - Background color settings.
+ * @property {string} palette.background.default - Default background color (#FFFBFE).
+ * @property {string} palette.background.paper - Paper background color (#FFFFFF).
+ * @property {Object} palette.text - Text color settings.
+ * @property {string} palette.text.primary - Primary text color (#1C1B1F).
+ * @property {string} palette.text.secondary - Secondary text color (#49454F).
+ * @property {Object} palette.error - Error color settings.
+ * @property {string} palette.error.main - Main error color (#B3261E).
+ *
+ * @property {Object} typography - Typography settings for the theme.
+ * @property {string} typography.fontFamily - Font family used throughout the app.
+ * @property {Object} typography.h1 - Heading 1 style.
+ * @property {Object} typography.h2 - Heading 2 style.
+ * @property {Object} typography.h3 - Heading 3 style.
+ * @property {Object} typography.h4 - Heading 4 style.
+ * @property {Object} typography.h5 - Heading 5 style.
+ * @property {Object} typography.h6 - Heading 6 style.
+ * @property {Object} typography.button - Button text style.
+ *
+ * @property {Object} shape - Shape settings for the theme.
+ * @property {number} shape.borderRadius - Default border radius for components (12).
+ *
+ * @property {Object} components - Component-specific overrides and default props.
+ * @property {Object} components.MuiPaper - Overrides for the Paper component.
+ * @property {Object} components.MuiButton - Overrides for the Button component.
+ * @property {Object} components.MuiTextField - Default props for the TextField component.
+ * @property {Object} components.MuiSelect - Default props for the Select component.
+ */
 const theme = createTheme({
   palette: {
     primary: {

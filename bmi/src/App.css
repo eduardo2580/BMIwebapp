@@ -1,3 +1,67 @@
+/* 
+  App.css - BMI Web App Main Stylesheet
+
+  Theme Variables:
+    - Defines color palette using CSS variables for primary, secondary, success, warning, danger, light, and dark.
+
+  Global Styles:
+    - Applies box-sizing, resets margin/padding, and sets default font family.
+    - Sets a gradient background for the body.
+
+  Layout:
+    - .app: Flex container for main layout, centers content, adds padding and gap.
+    - .container, .information-card: Card-like containers with padding, border-radius, shadow, and responsive width.
+    - .container:hover: Adds lift effect on hover.
+
+  Language Switcher:
+    - .language-switcher: Flex row for language buttons.
+    - .language-switcher button: Styled buttons with hover and disabled states.
+
+  Typography:
+    - h2, h3: Styled headings with color, margin, weight, and alignment.
+
+  Form Elements:
+    - .input-group: Spacing for input sections.
+    - .input-header: Flex row for label and unit toggle.
+    - .unit-toggle: Button for switching units.
+    - label: Block display, color, and weight.
+    - input: Styled input fields with focus effect.
+    - .radio-group, .radio-label: Flex layout for radio options.
+
+  Buttons:
+    - .button-group: Flex row for action buttons.
+    - .btn, .btn-primary, .btn-reset: Button styles with hover effects.
+
+  Result Display:
+    - .result-card: Card for BMI result with fade-in animation.
+    - .bmi-value: Large, bold BMI number.
+    - .category-indicator: Circular indicator for BMI category.
+
+  Progress Bar:
+    - .progress-container, .progress-bar, .progress-fill: Horizontal progress bar with animated fill.
+    - .progress-labels, .progress-categories: Labels for progress bar.
+    - .marker: Marker for specific points on the bar.
+
+  Health Risks:
+    - .health-risks: Box for health risk info, with heading and list.
+
+  Miscellaneous:
+    - .disclaimer: Small, italic disclaimer text.
+    - .error-message: Hidden by default, shown on error.
+
+  History Section:
+    - .history-section: Section for BMI calculation history.
+    - .history-header: Flex row for history title and clear button.
+    - .btn-clear: Button to clear history.
+    - .history-item: Row for each history entry.
+    - .history-date, .history-details, .history-bmi, .history-category: Styles for history details.
+
+  Responsive Design:
+    - Adjusts padding, button group, and radio group layout for small screens.
+
+  Information Card:
+    - .information-card h3, p, ul: Spacing and alignment for informational content.
+*/
 :root {
   --primary: #2A2A72;
   --secondary: #009FFD;

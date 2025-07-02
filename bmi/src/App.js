@@ -386,6 +386,14 @@ function App() {
           <strong>{t('limitations')}</strong> {t('limitationsText')}
         </Typography>
       </Paper>
+
+        <Paper elevation={1} sx={{ mt: 2, p: 2 }}>
+        <Typography variant="h5" gutterBottom>{t('aboutNutritionalPlan')}</Typography>
+        <Typography paragraph>
+          {t('aboutNutricionText1')}
+        </Typography>
+      </Paper>
+      
     </Container>
   );
 }

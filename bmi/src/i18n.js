@@ -22,4 +22,10 @@ i18n
     },
   });
 
+/**
+ * The i18n instance used for internationalization throughout the application.
+ * Provides methods and properties for translating text and managing locales.
+ *
+ * @type {import('i18next').i18n}
+ */
 export default i18n;

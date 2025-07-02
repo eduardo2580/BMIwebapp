@@ -1,20 +1,22 @@
-import React from 'react';
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
-const GoalSelector = ({ goal, setGoal }) => {
+const GoalSelector = ({ goal = '', setGoal }) => {
+  const { t } = useTranslation();
+
   return (
     <FormControl fullWidth margin="normal">
-      <InputLabel id="goal-select-label">Select Your Goal</InputLabel>
+      <InputLabel id="goal-select-label">{t('selectYourGoal')}</InputLabel>
       <Select
         labelId="goal-select-label"
         id="goal-select"
         value={goal}
-        label="Select Your Goal"
+        label={t('selectYourGoal')}
         onChange={(e) => setGoal(e.target.value)}
       >
-        <MenuItem value="maintenance">Maintain Weight</MenuItem>
-        <MenuItem value="loss">Weight Loss</MenuItem>
-        <MenuItem value="gain">Weight Gain</MenuItem>
+        <MenuItem value="maintenance">{t('maintainWeight')}</MenuItem>
+        <MenuItem value="loss">{t('weightLoss')}</MenuItem>
+        <MenuItem value="gain">{t('weightGain')}</MenuItem>
       </Select>
     </FormControl>
   );
