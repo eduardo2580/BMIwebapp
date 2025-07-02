@@ -29,6 +29,33 @@ body {
   gap: 2rem;
 }
 
+.language-switcher {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.language-switcher button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  margin: 0 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.language-switcher button:hover {
+  background-color: #e0e0e0;
+}
+
+.language-switcher button:disabled {
+  background-color: #ddd;
+  color: #888;
+  cursor: not-allowed;
+}
+
 .container {
   background: white;
   padding: 2rem;
