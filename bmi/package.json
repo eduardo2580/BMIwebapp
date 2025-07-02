@@ -19,6 +19,12 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2"
   },
+  "devDependencies": {
+    "typescript": "~4.9.5"
+  },
+  "overrides": {
+    "typescript": "~4.9.5"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
