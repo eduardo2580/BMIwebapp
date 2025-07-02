@@ -1,11 +1,22 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from './LanguageSwitcher';
+import NutritionalPlanner from './NutritionalPlanner'; // Added
+import {
+  Container, TextField, Button, RadioGroup, FormControlLabel, Radio,
+  Typography, Box, Paper, Grid, FormControl, FormLabel, Alert,
+  Tabs, Tab
+} from '@mui/material';
+// import { useTranslation } from 'react-i18next'; // Removed
+// import LanguageSwitcher from './LanguageSwitcher'; // Removed
 
 function App() {
-  const { t } = useTranslation();
+  // const { t } = useTranslation(); // Removed
   const [weight, setWeight] = useState('');
+  const [currentTab, setCurrentTab] = useState(0); // 0 for BMI, 1 for Nutritional Planner
+
+  const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
+  };
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
@@ -111,26 +122,26 @@ function App() {
     
     // Standard WHO BMI classifications
     if (value < 16) {
-      result = { message: t('severeThinness'), color: '#FF3C3C', range: 'Below 16' };
+      result = { message: 'Severe Thinness', color: '#FF3C3C', range: 'Below 16' };
     } else if (value < 17) {
-      result = { message: t('moderateThinness'), color: '#FF5C5C', range: '16-16.9' };
+      result = { message: 'Moderate Thinness', color: '#FF5C5C', range: '16-16.9' };
     } else if (value < 18.5) {
-      result = { message: t('mildThinness'), color: '#FFA400', range: '17-18.4' };
+      result = { message: 'Mild Thinness', color: '#FFA400', range: '17-18.4' };
     } else if (value < 25) {
-      result = { message: t('normal'), color: '#2DC653', range: '18.5-24.9' };
+      result = { message: 'Normal', color: '#2DC653', range: '18.5-24.9' };
     } else if (value < 30) {
-      result = { message: t('overweight'), color: '#FFA400', range: '25-29.9' };
+      result = { message: 'Overweight', color: '#FFA400', range: '25-29.9' };
     } else if (value < 35) {
-      result = { message: t('obeseClass1'), color: '#FF7E3C', range: '30-34.9' };
+      result = { message: 'Obese Class I', color: '#FF7E3C', range: '30-34.9' };
     } else if (value < 40) {
-      result = { message: t('obeseClass2'), color: '#FF5C3C', range: '35-39.9' };
+      result = { message: 'Obese Class II', color: '#FF5C3C', range: '35-39.9' };
     } else {
-      result = { message: t('obeseClass3'), color: '#FF3C3C', range: '40+' };
+      result = { message: 'Obese Class III', color: '#FF3C3C', range: '40+' };
     }
     
     // Adjust ranges for children if age is provided
     if (age && age < 18) {
-      result.message += t('childBMIConsult');
+      result.message += ' (Child BMI - consult pediatrician)';
     }
     
     setCategory(result);
@@ -142,32 +153,32 @@ function App() {
     
     // General risks based on BMI
     if (bmiValue < 18.5) {
-      risks.push(t('potentialNutritionalDeficiencies'));
-      risks.push(t('weakenedImmuneSystem'));
-      if (bmiValue < 16) risks.push(t('severeHealthComplications'));
+      risks.push('Potential nutritional deficiencies');
+      risks.push('Weakened immune system');
+      if (bmiValue < 16) risks.push('Severe health complications');
     } else if (bmiValue >= 25 && bmiValue < 30) {
-      risks.push(t('increasedRiskHeartDisease'));
-      risks.push(t('higherRiskType2Diabetes'));
+      risks.push('Increased risk of developing heart disease');
+      risks.push('Higher risk of type 2 diabetes');
     } else if (bmiValue >= 30) {
-      risks.push(t('highRiskHeartDiseaseStroke'));
-      risks.push(t('highRiskType2Diabetes'));
-      risks.push(t('increasedRiskCertainCancers'));
-      if (bmiValue >= 40) risks.push(t('severeHealthComplications'));
+      risks.push('High risk of heart disease and stroke');
+      risks.push('High risk of type 2 diabetes');
+      risks.push('Increased risk of certain cancers');
+      if (bmiValue >= 40) risks.push('Severe health complications');
     }
     
     // Age-specific risks
     if (age) {
       const ageNum = parseInt(age);
       if (ageNum < 18 && bmiValue > 30) {
-        risks.push(t('riskEarlyOnsetDiabetes'));
+        risks.push('Risk of early onset diabetes');
       } else if (ageNum > 65 && bmiValue < 22) {
-        risks.push(t('higherRiskFrailtyFalls'));
+        risks.push('Higher risk of frailty and falls');
       }
     }
     
     // Gender-specific risks
     if (gender === 'female' && bmiValue < 18.5) {
-      risks.push(t('potentialReproductiveHealthIssues'));
+      risks.push('Potential reproductive health issues');
     }
     
     return risks;
@@ -190,208 +201,204 @@ function App() {
   };
 
   return (
-    <div className="app">
-      <LanguageSwitcher />
-      <div className="container">
-        <h2>{t('bmiHealthCalculator')}</h2>
-        <form onSubmit={calculateBMI}>
-          <div className="input-group">
-            <div className="input-header">
-              <label>{t('weight')} ({units.weight})</label>
-              <button
-                type="button"
-                className="unit-toggle"
+    <Box className="app" sx={{ padding: { xs: 1, sm: 2 }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+      <Paper elevation={3} sx={{ padding: { xs: 1, sm: 2, md: 3 }, width: '100%', maxWidth: '600px' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}>
+          <Tabs value={currentTab} onChange={handleTabChange} centered variant="fullWidth">
+            <Tab label="BMI Calculator" />
+            <Tab label="Nutritional Planner" />
+          </Tabs>
+        </Box>
+
+        {/* BMI Calculator Tab Panel */}
+        {currentTab === 0 && (
+          <Box>
+            <Typography variant="h5" component="h2" gutterBottom align="center">
+              BMI Health Calculator
+            </Typography>
+            <Box component="form" onSubmit={calculateBMI} noValidate sx={{ mt: 1 }}>
+              <Grid container spacing={2} alignItems="flex-end">
+                <Grid item xs={12} sm={9}>
+                  <TextField
+                label={`Weight (${units.weight})`}
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                inputProps={{ min: "0", step: "0.1" }}
+                error={errors.weight}
+                helperText={errors.weight ? "Please enter a valid weight" : ""}
+                placeholder={`Enter weight in ${units.weight}`}
+                fullWidth
+                variant="outlined"
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Button
+                variant="text"
                 onClick={() => toggleUnits('weight')}
+                size="small"
+                fullWidth
+                sx={{ mb: errors.weight ? '23px' : '8px' }} // Adjust margin to align with TextField helperText
               >
-                {t('switchTo')} {units.weight === 'kg' ? 'lb' : 'kg'}
-              </button>
-            </div>
-            <input
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              min="0"
-              step="0.1"
-              className={errors.weight ? 'error' : ''}
-              placeholder={`${t('enterWeightIn')} ${units.weight}`}
-            />
-            <span className={`error-message ${errors.weight ? 'show' : ''}`}>
-              {t('validWeightError')}
-            </span>
-          </div>
+                Switch to {units.weight === 'kg' ? 'lb' : 'kg'}
+              </Button>
+            </Grid>
+          </Grid>
 
-          <div className="input-group">
-            <div className="input-header">
-              <label>{t('height')} ({units.height})</label>
-              <button
-                type="button"
-                className="unit-toggle"
+          <Grid container spacing={2} alignItems="flex-end">
+            <Grid item xs={12} sm={9}>
+              <TextField
+                label={`Height (${units.height})`}
+                type="number"
+                value={height}
+                onChange={(e) => setHeight(e.target.value)}
+                inputProps={{ min: "0", step: "0.1" }}
+                error={errors.height}
+                helperText={errors.height ? "Please enter a valid height" : ""}
+                placeholder={`Enter height in ${units.height}`}
+                fullWidth
+                variant="outlined"
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Button
+                variant="text"
                 onClick={() => toggleUnits('height')}
+                size="small"
+                fullWidth
+                sx={{ mb: errors.height ? '23px' : '8px' }}
               >
-                {t('switchTo')} {units.height === 'cm' ? 'in' : 'cm'}
-              </button>
-            </div>
-            <input
-              type="number"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              min="0"
-              step="0.1"
-              className={errors.height ? 'error' : ''}
-              placeholder={`${t('enterHeightIn')} ${units.height}`}
-            />
-            <span className={`error-message ${errors.height ? 'show' : ''}`}>
-              {t('validHeightError')}
-            </span>
-          </div>
+                Switch to {units.height === 'cm' ? 'in' : 'cm'}
+              </Button>
+            </Grid>
+          </Grid>
 
-          <div className="input-group">
-            <label>{t('age')}</label>
-            <input
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              min="0"
-              max="120"
-              className={errors.age ? 'error' : ''}
-              placeholder={t('enterAge')}
-            />
-            <span className={`error-message ${errors.age ? 'show' : ''}`}>
-              {t('validAgeError')}
-            </span>
-          </div>
+          <TextField
+            label="Age (Optional)"
+            type="number"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            inputProps={{ min: "0", max: "120" }}
+            error={errors.age}
+            helperText={errors.age ? "Please enter a valid age between 2 and 120" : ""}
+            placeholder="Enter age (2-120)"
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
 
-          <div className="input-group">
-            <label>{t('gender')}</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="male"
-                  checked={gender === 'male'}
-                  onChange={() => setGender('male')}
-                />
-                {t('male')}
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="female"
-                  checked={gender === 'female'}
-                  onChange={() => setGender('female')}
-                />
-                {t('female')}
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="other"
-                  checked={gender === 'other'}
-                  onChange={() => setGender('other')}
-                />
-                {t('other')}
-              </label>
-            </div>
-          </div>
+          <FormControl component="fieldset" margin="normal" fullWidth>
+            <FormLabel component="legend">Gender (Optional)</FormLabel>
+            <RadioGroup
+              row
+              aria-label="gender"
+              name="gender"
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <FormControlLabel value="male" control={<Radio />} label="Male" />
+              <FormControlLabel value="female" control={<Radio />} label="Female" />
+              <FormControlLabel value="other" control={<Radio />} label="Other" />
+            </RadioGroup>
+          </FormControl>
 
-          <div className="button-group">
-            <button type="submit" className="btn btn-primary">
-              {t('calculateBMI')}
-            </button>
-            <button type="button" className="btn btn-reset" onClick={resetForm}>
-              {t('reset')}
-            </button>
-          </div>
-        </form>
+          <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              Calculate BMI
+            </Button>
+            <Button type="button" variant="outlined" onClick={resetForm} fullWidth>
+              Reset
+            </Button>
+          </Box>
+        </Box>
 
         {bmi && (
-          <div className="result-card" style={{ background: category.color + '15' }}>
-            <div className="category-indicator" style={{ background: category.color }}>
-              {category.message}
-            </div>
-            <div className="bmi-value">{bmi}</div>
-            <p className="bmi-category">{t('bmiCategory')}: <strong>{category.message}</strong></p>
-            <p className="bmi-range">{t('healthyBMIRange')}: <strong>18.5-24.9</strong></p>
-            <p className="category-range">{t('yourCategoryRange')}: <strong>{category.range}</strong></p>
+          <Paper elevation={1} sx={{ padding: 2, marginTop: 3, backgroundColor: category.color + '15' }}>
+            <Box sx={{
+              padding: 1,
+              backgroundColor: category.color,
+              color: 'white',
+              borderRadius: '4px',
+              textAlign: 'center',
+              marginBottom: 2
+            }}>
+              <Typography variant="h6">{category.message}</Typography>
+            </Box>
+            <Typography variant="h3" align="center" gutterBottom>{bmi}</Typography>
+            <Typography variant="subtitle1" align="center">BMI Category: <strong>{category.message}</strong></Typography>
+            <Typography variant="body2" align="center">Healthy BMI Range: <strong>18.5-24.9</strong></Typography>
+            <Typography variant="body2" align="center" gutterBottom>Your Category Range: <strong>{category.range}</strong></Typography>
 
-            <div className="progress-container">
-              <div className="progress-labels">
-                <span>0</span>
-                <span>18.5</span>
-                <span>25</span>
-                <span>30</span>
-                <span>40</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min((bmi / 40) * 100, 100)}%`,
-                    background: category.color
-                  }}
-                />
-                <div className="marker underweight" style={{ left: '18.5%' }}></div>
-                <div className="marker normal" style={{ left: '25%' }}></div>
-                <div className="marker overweight" style={{ left: '30%' }}></div>
-                <div className="marker obese" style={{ left: '40%' }}></div>
-              </div>
-              <div className="progress-categories">
-                <span>{t('underweight')}</span>
-                <span>{t('normal')}</span>
-                <span>{t('overweight')}</span>
-                <span>{t('obeseClass1')}</span>
-              </div>
-            </div>
-
+            {/* Progress bar might need a custom component or more complex MUI setup - skipping for now */}
+            {/* Health Risks */}
             {healthRisks.length > 0 && (
-              <div className="health-risks">
-                <h4>{t('healthConsiderations')}</h4>
+              <Box mt={2}>
+                <Typography variant="h6">Health Considerations:</Typography>
                 <ul>
                   {healthRisks.map((risk, index) => (
-                    <li key={index}>{risk}</li>
+                    <li key={index}><Typography variant="body2">{risk}</Typography></li>
                   ))}
                 </ul>
-                <p className="disclaimer">{t('disclaimer')}</p>
-              </div>
+                <Typography variant="caption" display="block" mt={1}>
+                  Note: This is general guidance. Please consult a healthcare professional for personalized advice.
+                </Typography>
+              </Box>
             )}
-          </div>
+          </Paper>
         )}
 
         {history.length > 0 && (
-          <div className="history-section">
-            <div className="history-header">
-              <h3>{t('bmiHistory')}</h3>
-              <button className="btn-clear" onClick={clearHistory}>{t('clear')}</button>
-            </div>
-            <div className="history-list">
-              {history.map((entry, index) => (
-                <div key={index} className="history-item">
-                  <div className="history-date">{entry.date}</div>
-                  <div className="history-details">
-                    <span className="history-bmi">{entry.bmi}</span>
-                    <span className="history-category">{entry.category}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <Paper elevation={1} sx={{ padding: 2, marginTop: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 1 }}>
+              <Typography variant="h5">BMI History</Typography>
+              <Button onClick={clearHistory} size="small" color="secondary">Clear</Button>
+            </Box>
+            {history.map((entry, index) => (
+              <Paper key={index} variant="outlined" sx={{ padding: 1.5, marginBottom: 1, display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2">{entry.date}</Typography>
+                <Box>
+                  <Typography variant="body1" component="span" fontWeight="bold">{entry.bmi} </Typography>
+                  <Typography variant="caption" component="span">({entry.category})</Typography>
+                </Box>
+              </Paper>
+            ))}
+          </Paper>
         )}
-      </div>
-      <div className="information-card">
-        <h3>{t('aboutBMI')}</h3>
-        <p>{t('aboutBMIText1')}</p>
-        <p>{t('aboutBMIText2')}</p>
+          </Box>
+        )}
+        {/* End BMI Calculator Tab Panel */}
+
+        {/* Nutritional Planner Tab Panel */}
+        {currentTab === 1 && (
+          <NutritionalPlanner userData={{ weight, height, age, gender }} />
+        )}
+        {/* End Nutritional Planner Tab Panel */}
+      </Paper>
+
+      {/* Information Card - Placed outside the main Paper конкурирующий with tabs for now */}
+      <Paper elevation={1} sx={{ padding: 2, marginTop: 2, width: '100%', maxWidth: '600px' }}>
+        <Typography variant="h5" gutterBottom>About BMI & Nutrition</Typography> {/* Updated Title */}
+        <Typography variant="body1" paragraph>
+          Body Mass Index (BMI) is a numerical value calculated from a person's weight and height.
+          It provides a simple way to categorize a person's weight relative to their height.
+        </Typography>
+        <Typography variant="body1" paragraph>
+          The BMI classifications are based on World Health Organization standards:
+        </Typography>
         <ul>
-          <li>{t('severeThinness')}</li>
-          <li>{t('normalWeight')}</li>
-          <li>{t('overweight')}</li>
-          <li>{t('obesity')}</li>
+          <li><Typography variant="body2">Severe Thinness</Typography></li>
+          <li><Typography variant="body2">Normal weight</Typography></li>
+          <li><Typography variant="body2">Overweight</Typography></li>
+          <li><Typography variant="body2">Obesity</Typography></li>
         </ul>
-        <p>
-          <strong>{t('limitations')}</strong> {t('limitationsText')}
-        </p>
-      </div>
-    </div>
+        <Typography variant="body1" paragraph>
+          <strong>Limitations:</strong> BMI doesn't account for body composition (muscle vs. fat),
+          age, gender, ethnicity, or fitness level. It's a screening tool and not a diagnostic measurement.
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
 
