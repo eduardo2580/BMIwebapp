@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             heightInput.focus();
             return;
         }
-        if (isNaN(age) || age <= 0) {
+        if (isNaN(age) || age < 2 || age > 120) { // Updated age validation
             alert(getTranslation('errorAge'));
             ageInput.focus();
             return;
@@ -39,47 +39,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const heightInMeters = height / 100;
         const bmi = weight / (heightInMeters * heightInMeters);
+        const ageNum = parseInt(age); // Ensure age is a number for comparisons
+
+        const categoryResult = determineBmiCategory(bmi, ageNum); // Contains message and key
+        const healthRisks = calculateHealthRisks(bmi, ageNum, gender);
 
         bmiResultDiv.innerHTML = `<p>${getTranslation('bmiResultLabel')} <strong>${bmi.toFixed(2)}</strong></p>`;
+        bmiResultDiv.innerHTML += `<p>${getTranslation('bmiCategoryLabel')} <strong>${getTranslation(categoryResult.key)}</strong></p>`; // Using translated category message
 
-        let categoryKey = '';
-        if (bmi < 18.5) {
-            categoryKey = 'bmiCategoryUnderweight';
-        } else if (bmi < 24.9) {
-            categoryKey = 'bmiCategoryNormal';
-        } else if (bmi < 29.9) {
-            categoryKey = 'bmiCategoryOverweight';
-        } else {
-            categoryKey = 'bmiCategoryObese';
+        if (healthRisks.length > 0) {
+            bmiResultDiv.innerHTML += `<h4 data-translate="healthConsiderations">${getTranslation('healthConsiderations')}</h4><ul>`;
+            healthRisks.forEach(riskKey => { // Assuming riskKey is the translation key
+                bmiResultDiv.innerHTML += `<li>${getTranslation(riskKey)}</li>`;
+            });
+            bmiResultDiv.innerHTML += `</ul>`;
         }
-        bmiResultDiv.innerHTML += `<p>${getTranslation('bmiCategoryLabel')} <strong>${getTranslation(categoryKey)}</strong></p>`;
+         bmiResultDiv.innerHTML += `<p><small data-translate="bmiDisclaimer">${getTranslation('bmiDisclaimer')}</small></p>`;
 
-        generateNutritionalPlan(bmi, age, gender, activity, goal);
+
+        generateNutritionalPlan(bmi, ageNum, gender, activity, goal, weight); // Pass weight for macro calculation
     });
 
     resetButton.addEventListener('click', () => {
         weightInput.value = '';
         heightInput.value = '';
         ageInput.value = '';
-        genderSelect.value = 'male'; // Default, will be translated if options are dynamic
-        goalSelect.value = 'lose'; // Default
-        activitySelect.value = 'sedentary'; // Default
+        genderSelect.value = 'male';
+        goalSelect.value = 'lose';
+        activitySelect.value = 'sedentary';
         bmiResultDiv.innerHTML = '';
         nutritionalPlanDiv.innerHTML = '';
-        // Reset placeholders to current language
-        weightInput.placeholder = getTranslation('weightPlaceholder', {defaultValue: "Enter your weight"});
-        heightInput.placeholder = getTranslation('heightPlaceholder', {defaultValue: "Enter your height"});
-        ageInput.placeholder = getTranslation('agePlaceholder', {defaultValue: "Enter your age"});
+        weightInput.placeholder = getTranslation('weightPlaceholder', { defaultValue: "Enter your weight" });
+        heightInput.placeholder = getTranslation('heightPlaceholder', { defaultValue: "Enter your height" });
+        ageInput.placeholder = getTranslation('agePlaceholder', { defaultValue: "Enter your age" });
     });
 
-    function generateNutritionalPlan(bmi, age, gender, activity, goal) {
-        let bmr; // Basal Metabolic Rate
-        const currentWeight = parseFloat(weightInput.value); // Use current weight for BMR
+    function determineBmiCategory(bmiValue, age) {
+        let key;
+        if (bmiValue < 16) key = 'bmiSevereThinness';
+        else if (bmiValue < 17) key = 'bmiModerateThinness';
+        else if (bmiValue < 18.5) key = 'bmiMildThinness';
+        else if (bmiValue < 25) key = 'bmiNormal';
+        else if (bmiValue < 30) key = 'bmiOverweight';
+        else if (bmiValue < 35) key = 'bmiObeseClass1';
+        else if (bmiValue < 40) key = 'bmiObeseClass2';
+        else key = 'bmiObeseClass3';
+
+        let message = getTranslation(key);
+        if (age && age < 18 && age >=2) { // Added age check based on App.js (2-120)
+            message += ` (${getTranslation('childBMIConsult')})`;
+        }
+        return { key: key, message: message }; // Return both key and full message
+    }
+
+    function calculateHealthRisks(bmiValue, age, gender) {
+        const risks = []; // Store translation keys
+        if (bmiValue < 18.5) {
+            risks.push('riskNutritionalDeficiencies');
+            risks.push('riskWeakenedImmuneSystem');
+            if (bmiValue < 16) risks.push('riskSevereHealthComplications');
+        } else if (bmiValue >= 25 && bmiValue < 30) {
+            risks.push('riskIncreasedHeartDisease');
+            risks.push('riskHigherType2Diabetes');
+        } else if (bmiValue >= 30) {
+            risks.push('riskHighHeartDiseaseStroke');
+            risks.push('riskHighType2Diabetes');
+            risks.push('riskIncreasedCertainCancers');
+            if (bmiValue >= 40) risks.push('riskSevereHealthComplications'); // Re-use
+        }
+
+        if (age) {
+            if (age < 18 && age >= 2 && bmiValue > 30) risks.push('riskEarlyOnsetDiabetes');
+            else if (age > 65 && bmiValue < 22) risks.push('riskHigherFrailtyFalls');
+        }
+
+        if (gender === 'female' && bmiValue < 18.5) {
+            risks.push('riskPotentialReproductiveIssues');
+        }
+        return risks;
+    }
+
+    // BMR Calculation using Mifflin-St Jeor Equation (already present, just for reference)
+    // function calculateBMR(weight, height, age, gender) { ... }
+
+    // TDEE Calculation (already present, just for reference)
+    // function calculateTDEE(bmr, activityLevel) { ... }
+
+    // Target Calories Calculation (adjust 'loss' and 'gain' from nutritionalCalculator.js if different)
+    // function calculateTargetCalories(tdee, goal) { ... } // Current script.js uses -500 for lose, +500 for gain. nutritionalCalculator.js uses -500 and +300. Sticking to current script.js version for now.
+
+    // Macronutrient Calculation - Ported from nutritionalCalculator.js
+    function calculateMacros(targetCalories, weight) {
+      // Protein: 1.8g/kg of body weight is a common athletic recommendation.
+      // General population might be 0.8g/kg to 1.2g/kg.
+      // Let's use a percentage-based approach for simplicity, similar to original script.js, but calculate grams.
+      // Or use the 1.8g/kg and check if it fits reasonable percentages.
+      // For now, using the logic from nutritionalCalculator.js:
+      const proteinGrams = 1.8 * weight; // weight is expected in kg
+      const proteinCalories = proteinGrams * 4;
+
+      const fatPercentage = 0.25; // 25% of total calories from fat
+      const fatCalories = targetCalories * fatPercentage;
+      const fatGrams = fatCalories / 9;
+
+      const carbCalories = targetCalories - proteinCalories - fatCalories;
+      const carbGrams = carbCalories / 4;
+
+      // Ensure carbs are not negative if protein is very high
+      if (carbGrams < 0) {
+        // This would be an edge case, could adjust protein down or signal an issue.
+        // For now, let's assume inputs lead to reasonable positive carb grams.
+         return {
+            protein: Math.round(proteinGrams),
+            fat: Math.round(fatGrams),
+            carbs: 0, // Or handle this scenario more gracefully
+            error: getTranslation('macroErrorProteinTooHigh')
+        };
+      }
+
+      return {
+        protein: Math.round(proteinGrams),
+        fat: Math.round(fatGrams),
+        carbs: Math.round(carbGrams)
+      };
+    }
+
+    function generateNutritionalPlan(bmi, age, gender, activity, goal, currentWeight) { // Added currentWeight
+        let bmr;
         const currentHeight = parseFloat(heightInput.value);
 
-
         if (isNaN(currentWeight) || isNaN(currentHeight) || isNaN(age)) {
-            // Should not happen if validation is correct, but as a safeguard
             nutritionalPlanDiv.innerHTML = `<p>${getTranslation('errorMissingDataForPlan')}</p>`;
             return;
         }
@@ -90,64 +179,51 @@ document.addEventListener('DOMContentLoaded', () => {
             bmr = 10 * currentWeight + 6.25 * currentHeight - 5 * age - 161;
         }
 
-        let tdee; // Total Daily Energy Expenditure
+        let tdee;
         switch (activity) {
-            case 'sedentary':
-                tdee = bmr * 1.2;
-                break;
-            case 'light':
-                tdee = bmr * 1.375;
-                break;
-            case 'moderate':
-                tdee = bmr * 1.55;
-                break;
-            case 'active':
-                tdee = bmr * 1.725;
-                break;
-            case 'extra':
-                tdee = bmr * 1.9;
-                break;
-            default:
-                tdee = bmr * 1.2;
+            case 'sedentary': tdee = bmr * 1.2; break;
+            case 'light': tdee = bmr * 1.375; break;
+            case 'moderate': tdee = bmr * 1.55; break;
+            case 'active': tdee = bmr * 1.725; break;
+            case 'extra': tdee = bmr * 1.9; break;
+            default: tdee = bmr * 1.2;
         }
 
         let dailyCalories;
         switch (goal) {
-            case 'lose':
-                dailyCalories = tdee - 500; // Calorie deficit for weight loss
-                break;
-            case 'maintain':
-                dailyCalories = tdee;
-                break;
-            case 'gain':
-                dailyCalories = tdee + 500; // Calorie surplus for weight gain
-                break;
-            default:
-                dailyCalories = tdee;
+            case 'lose': dailyCalories = tdee - 500; break;
+            case 'maintain': dailyCalories = tdee; break;
+            case 'gain': dailyCalories = tdee + 500; break; // Kept +/- 500 as in original script.js
+            default: dailyCalories = tdee;
         }
 
-        // Ensure daily calories are not too low
-        if (dailyCalories < 1200 && gender === 'female') {
-            dailyCalories = 1200;
-        } else if (dailyCalories < 1500 && gender === 'male') {
-            dailyCalories = 1500;
-        }
+        if (dailyCalories < 1200 && gender === 'female') dailyCalories = 1200;
+        else if (dailyCalories < 1500 && gender === 'male') dailyCalories = 1500;
 
+        const macros = calculateMacros(dailyCalories, currentWeight);
+
+        let macroHtml = '';
+        if (macros.error) {
+            macroHtml = `<p>${macros.error}</p>`;
+        } else {
+            macroHtml = `
+                <ul>
+                    <li>${getTranslation('proteinLabel')} ~${macros.protein}g</li>
+                    <li>${getTranslation('carbsLabel')} ~${macros.carbs}g</li>
+                    <li>${getTranslation('fatsLabel')} ~${macros.fat}g</li>
+                </ul>
+            `;
+        }
 
         nutritionalPlanDiv.innerHTML = `
             <h3 data-translate="nutritionalPlanTitle">${getTranslation('nutritionalPlanTitle')}</h3>
             <p>${getTranslation('estimatedDailyCalories')} <strong>${Math.round(dailyCalories)} kcal</strong></p>
-            <p data-translate="macronutrientRatio">${getTranslation('macronutrientRatio')}</p>
-            <ul>
-                <li data-translate="proteinRatio">${getTranslation('proteinRatio', { percentage: '30-35%' })}</li>
-                <li data-translate="carbsRatio">${getTranslation('carbsRatio', { percentage: '40-50%' })}</li>
-                <li data-translate="fatsRatio">${getTranslation('fatsRatio', { percentage: '20-25%' })}</li>
-            </ul>
+            <h4 data-translate="macronutrientDistribution">${getTranslation('macronutrientDistribution')}</h4>
+            ${macroHtml}
             <p data-translate="planDisclaimer">${getTranslation('planDisclaimer')}</p>
         `;
-        // Re-apply translations if needed for dynamically generated content
         if (typeof updateTranslations === 'function') {
-            updateTranslations();
+            updateTranslations(); // To translate any newly added data-translate attributes if needed.
         }
     }
 
@@ -179,24 +255,49 @@ document.addEventListener('DOMContentLoaded', () => {
             footerText: "&copy; 2023 BMI Health Calculator",
             errorWeight: "Please enter a valid weight.",
             errorHeight: "Please enter a valid height.",
-            errorAge: "Please enter a valid age.",
+            errorAge: "Please enter a valid age (2-120).", // Updated age error
             bmiResultLabel: "Your BMI is:",
             bmiCategoryLabel: "Category:",
-            bmiCategoryUnderweight: "Underweight",
-            bmiCategoryNormal: "Normal weight",
-            bmiCategoryOverweight: "Overweight",
-            bmiCategoryObese: "Obese",
             nutritionalPlanTitle: "Nutritional Plan Suggestion",
             estimatedDailyCalories: "Estimated Daily Caloric Intake:",
-            macronutrientRatio: "Suggested Macronutrient Ratio (approximate):",
-            proteinRatio: "Protein: {percentage}",
-            carbsRatio: "Carbohydrates: {percentage}",
-            fatsRatio: "Fats: {percentage}",
             planDisclaimer: "This is a general guideline. For a personalized plan, please consult a nutritionist or healthcare provider. Ensure you stay hydrated and include a variety of fruits, vegetables, lean proteins, and whole grains in your diet.",
             weightPlaceholder: "Enter your weight",
             heightPlaceholder: "Enter your height",
             agePlaceholder: "Enter your age",
-            errorMissingDataForPlan: "Cannot generate plan, missing input data."
+            errorMissingDataForPlan: "Cannot generate plan, missing input data.",
+
+            // New/Updated BMI Categories from App.js
+            bmiSevereThinness: "Severe Thinness",
+            bmiModerateThinness: "Moderate Thinness",
+            bmiMildThinness: "Mild Thinness",
+            bmiNormal: "Normal",
+            bmiOverweight: "Overweight",
+            bmiObeseClass1: "Obese Class I",
+            bmiObeseClass2: "Obese Class II",
+            bmiObeseClass3: "Obese Class III",
+            childBMIConsult: "(Child BMI - consult pediatrician)",
+
+            // Health Risks from App.js
+            healthConsiderations: "Health Considerations:",
+            riskNutritionalDeficiencies: "Potential nutritional deficiencies",
+            riskWeakenedImmuneSystem: "Weakened immune system",
+            riskSevereHealthComplications: "Severe health complications",
+            riskIncreasedHeartDisease: "Increased risk of developing heart disease",
+            riskHigherType2Diabetes: "Higher risk of type 2 diabetes",
+            riskHighHeartDiseaseStroke: "High risk of heart disease and stroke",
+            riskHighType2Diabetes: "High risk of type 2 diabetes", // Matches App.js key
+            riskIncreasedCertainCancers: "Increased risk of certain cancers",
+            riskEarlyOnsetDiabetes: "Risk of early onset diabetes",
+            riskHigherFrailtyFalls: "Higher risk of frailty and falls",
+            riskPotentialReproductiveIssues: "Potential reproductive health issues",
+            bmiDisclaimer: "Note: This is general guidance. Please consult a healthcare professional for personalized advice.",
+
+            // Nutritional Plan - Macros
+            macronutrientDistribution: "Suggested Macronutrient Distribution (approximate grams):",
+            proteinLabel: "Protein:",
+            carbsLabel: "Carbohydrates:",
+            fatsLabel: "Fats:",
+            macroErrorProteinTooHigh: "Macro calculation error: Protein intake is too high for the estimated calorie goal. Please review inputs or consult a professional."
         },
         pt: {
             title: "Calculadora de IMC e Plano Nutricional",
@@ -224,24 +325,49 @@ document.addEventListener('DOMContentLoaded', () => {
             footerText: "&copy; 2023 Calculadora de IMC",
             errorWeight: "Por favor, insira um peso válido.",
             errorHeight: "Por favor, insira uma altura válida.",
-            errorAge: "Por favor, insira uma idade válida.",
+            errorAge: "Por favor, insira uma idade válida (2-120).",
             bmiResultLabel: "Seu IMC é:",
             bmiCategoryLabel: "Categoria:",
-            bmiCategoryUnderweight: "Abaixo do peso",
-            bmiCategoryNormal: "Peso normal",
-            bmiCategoryOverweight: "Sobrepeso",
-            bmiCategoryObese: "Obeso",
             nutritionalPlanTitle: "Sugestão de Plano Nutricional",
             estimatedDailyCalories: "Ingestão Calórica Diária Estimada:",
-            macronutrientRatio: "Proporção Sugerida de Macronutrientes (aproximada):",
-            proteinRatio: "Proteína: {percentage}",
-            carbsRatio: "Carboidratos: {percentage}",
-            fatsRatio: "Gorduras: {percentage}",
             planDisclaimer: "Esta é uma orientação geral. Para um plano personalizado, consulte um nutricionista ou profissional de saúde. Certifique-se de manter-se hidratado e incluir uma variedade de frutas, vegetais, proteínas magras e grãos integrais em sua dieta.",
             weightPlaceholder: "Digite seu peso",
             heightPlaceholder: "Digite sua altura",
             agePlaceholder: "Digite sua idade",
-            errorMissingDataForPlan: "Não é possível gerar o plano, dados de entrada ausentes."
+            errorMissingDataForPlan: "Não é possível gerar o plano, dados de entrada ausentes.",
+
+            // BMI Categories - PT
+            bmiSevereThinness: "Magreza Grave",
+            bmiModerateThinness: "Magreza Moderada",
+            bmiMildThinness: "Magreza Leve",
+            bmiNormal: "Normal",
+            bmiOverweight: "Sobrepeso",
+            bmiObeseClass1: "Obesidade Classe I",
+            bmiObeseClass2: "Obesidade Classe II",
+            bmiObeseClass3: "Obesidade Classe III",
+            childBMIConsult: "(IMC Infantil - consulte um pediatra)",
+
+            // Health Risks - PT
+            healthConsiderations: "Considerações de Saúde:",
+            riskNutritionalDeficiencies: "Potenciais deficiências nutricionais",
+            riskWeakenedImmuneSystem: "Sistema imunológico enfraquecido",
+            riskSevereHealthComplications: "Complicações graves de saúde",
+            riskIncreasedHeartDisease: "Risco aumentado de doenças cardíacas",
+            riskHigherType2Diabetes: "Risco aumentado de diabetes tipo 2",
+            riskHighHeartDiseaseStroke: "Alto risco de doenças cardíacas e derrame",
+            riskHighType2Diabetes: "Alto risco de diabetes tipo 2",
+            riskIncreasedCertainCancers: "Risco aumentado de certos tipos de câncer",
+            riskEarlyOnsetDiabetes: "Risco de diabetes de início precoce",
+            riskHigherFrailtyFalls: "Maior risco de fragilidade e quedas",
+            riskPotentialReproductiveIssues: "Potenciais problemas de saúde reprodutiva",
+            bmiDisclaimer: "Nota: Esta é uma orientação geral. Consulte um profissional de saúde para aconselhamento personalizado.",
+
+            // Nutritional Plan - Macros - PT
+            macronutrientDistribution: "Distribuição Sugerida de Macronutrientes (gramas aproximadas):",
+            proteinLabel: "Proteína:",
+            carbsLabel: "Carboidratos:",
+            fatsLabel: "Gorduras:",
+            macroErrorProteinTooHigh: "Erro no cálculo de macros: A ingestão de proteína é muito alta para o objetivo calórico estimado. Revise os dados ou consulte um profissional."
         },
         es: {
             title: "Calculadora de IMC y Plan Nutricional",
@@ -269,24 +395,49 @@ document.addEventListener('DOMContentLoaded', () => {
             footerText: "&copy; 2023 Calculadora de IMC",
             errorWeight: "Por favor, ingrese un peso válido.",
             errorHeight: "Por favor, ingrese una altura válida.",
-            errorAge: "Por favor, ingrese una edad válida.",
+            errorAge: "Por favor, ingrese una edad válida (2-120).",
             bmiResultLabel: "Su IMC es:",
             bmiCategoryLabel: "Categoría:",
-            bmiCategoryUnderweight: "Bajo peso",
-            bmiCategoryNormal: "Peso normal",
-            bmiCategoryOverweight: "Sobrepeso",
-            bmiCategoryObese: "Obeso",
             nutritionalPlanTitle: "Sugerencia de Plan Nutricional",
             estimatedDailyCalories: "Ingesta Calórica Diaria Estimada:",
-            macronutrientRatio: "Proporción Sugerida de Macronutrientes (aproximada):",
-            proteinRatio: "Proteína: {percentage}",
-            carbsRatio: "Carbohidratos: {percentage}",
-            fatsRatio: "Grasas: {percentage}",
             planDisclaimer: "Esta es una guía general. Para un plan personalizado, consulte a un nutricionista o proveedor de atención médica. Asegúrese de mantenerse hidratado e incluir una variedad de frutas, verduras, proteínas magras y granos integrales en su dieta.",
             weightPlaceholder: "Ingrese su peso",
             heightPlaceholder: "Ingrese su altura",
             agePlaceholder: "Ingrese su edad",
-            errorMissingDataForPlan: "No se puede generar el plan, faltan datos de entrada."
+            errorMissingDataForPlan: "No se puede generar el plan, faltan datos de entrada.",
+
+            // BMI Categories - ES
+            bmiSevereThinness: "Delgadez Severa",
+            bmiModerateThinness: "Delgadez Moderada",
+            bmiMildThinness: "Delgadez Leve",
+            bmiNormal: "Normal",
+            bmiOverweight: "Sobrepeso",
+            bmiObeseClass1: "Obesidad Clase I",
+            bmiObeseClass2: "Obesidad Clase II",
+            bmiObeseClass3: "Obesidad Clase III",
+            childBMIConsult: "(IMC Infantil - consulte a un pediatra)",
+
+            // Health Risks - ES
+            healthConsiderations: "Consideraciones de Salud:",
+            riskNutritionalDeficiencies: "Posibles deficiencias nutricionales",
+            riskWeakenedImmuneSystem: "Sistema inmunológico debilitado",
+            riskSevereHealthComplications: "Complicaciones graves de salud",
+            riskIncreasedHeartDisease: "Mayor riesgo de enfermedades cardíacas",
+            riskHigherType2Diabetes: "Mayor riesgo de diabetes tipo 2",
+            riskHighHeartDiseaseStroke: "Alto riesgo de enfermedades cardíacas y accidente cerebrovascular",
+            riskHighType2Diabetes: "Alto riesgo de diabetes tipo 2",
+            riskIncreasedCertainCancers: "Mayor riesgo de ciertos tipos de cáncer",
+            riskEarlyOnsetDiabetes: "Riesgo de diabetes de aparición temprana",
+            riskHigherFrailtyFalls: "Mayor riesgo de fragilidad y caídas",
+            riskPotentialReproductiveIssues: "Posibles problemas de salud reproductiva",
+            bmiDisclaimer: "Nota: Esta es una guía general. Consulte a un profesional de la salud para obtener asesoramiento personalizado.",
+
+            // Nutritional Plan - Macros - ES
+            macronutrientDistribution: "Distribución Sugerida de Macronutrientes (gramos aproximados):",
+            proteinLabel: "Proteína:",
+            carbsLabel: "Carbohidratos:",
+            fatsLabel: "Grasas:",
+            macroErrorProteinTooHigh: "Error en el cálculo de macros: La ingesta de proteínas es demasiado alta para el objetivo calórico estimado. Revise los datos o consulte a un profesional."
         }
     };
 

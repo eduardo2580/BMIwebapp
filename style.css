@@ -166,12 +166,75 @@ header h1 {
 
 #bmi-result {
     font-size: 18px;
-    font-weight: bold;
+    /* font-weight: bold; Applied to specific p tags now */
     margin-bottom: 10px;
 }
 
-#nutritional-plan p {
+#bmi-result p { /* Style for BMI value and category */
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+
+#bmi-result h4 { /* Health Considerations heading */
+    font-size: 1.1em;
+    color: var(--primary-color);
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+#bmi-result ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+    font-weight: normal;
+}
+
+#bmi-result ul li {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+#bmi-result small { /* BMI Disclaimer */
+    font-size: 0.8em;
+    color: #555;
+    font-weight: normal;
+}
+
+
+#nutritional-plan h3 { /* Nutritional Plan Suggestion title */
+    font-size: 1.2em;
+    color: var(--primary-color);
+    margin-top: 0; /* Already in .results h2 style but good to be explicit if needed */
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+#nutritional-plan h4 { /* Macronutrient Distribution heading */
+    font-size: 1.1em;
+    color: var(--primary-color);
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+#nutritional-plan ul {
+    list-style-type: none; /* Remove bullets for macros */
+    padding-left: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+#nutritional-plan ul li {
+    margin-bottom: 6px;
     line-height: 1.6;
+}
+
+#nutritional-plan p { /* General paragraphs in nutritional plan, like disclaimer */
+    line-height: 1.6;
+    font-size: 0.95em;
 }
 
 .about p {
