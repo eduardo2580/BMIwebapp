@@ -1,10 +1,17 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import NutritionalPlanner from './NutritionalPlanner'; // Componente adicional
 import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+
+import {
+  Container, TextField, Button, RadioGroup, FormControlLabel, Radio,
+  Typography, Box, Paper, Grid, FormControl, FormLabel, Tabs, Tab
+} from '@mui/material';
 
 function App() {
   const { t } = useTranslation();
+
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
@@ -15,16 +22,14 @@ function App() {
   const [errors, setErrors] = useState({ weight: false, height: false, age: false });
   const [units, setUnits] = useState({ weight: 'kg', height: 'cm' });
   const [history, setHistory] = useState([]);
+  const [currentTab, setCurrentTab] = useState(0); // 0 BMI, 1 Nutritional Planner
 
-  // Load history from localStorage on component mount
+  // Histórico do localStorage
   useEffect(() => {
     const savedHistory = localStorage.getItem('bmiHistory');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
+    if (savedHistory) setHistory(JSON.parse(savedHistory));
   }, []);
 
-  // Save history to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('bmiHistory', JSON.stringify(history));
   }, [history]);
@@ -33,7 +38,7 @@ function App() {
     const newErrors = {
       weight: !weight || weight <= 0,
       height: !height || height <= 0,
-      age: age && (age < 2 || age > 120)
+      age: age && (age < 2 || age > 120),
     };
     setErrors(newErrors);
     return !newErrors.weight && !newErrors.height && !newErrors.age;
@@ -43,26 +48,18 @@ function App() {
     if (type === 'weight') {
       if (units.weight === 'kg') {
         setUnits({ ...units, weight: 'lb' });
-        if (weight) {
-          setWeight((parseFloat(weight) * 2.20462).toFixed(1));
-        }
+        if (weight) setWeight((parseFloat(weight) * 2.20462).toFixed(1));
       } else {
         setUnits({ ...units, weight: 'kg' });
-        if (weight) {
-          setWeight((parseFloat(weight) / 2.20462).toFixed(1));
-        }
+        if (weight) setWeight((parseFloat(weight) / 2.20462).toFixed(1));
       }
     } else if (type === 'height') {
       if (units.height === 'cm') {
         setUnits({ ...units, height: 'in' });
-        if (height) {
-          setHeight((parseFloat(height) / 2.54).toFixed(1));
-        }
+        if (height) setHeight((parseFloat(height) / 2.54).toFixed(1));
       } else {
         setUnits({ ...units, height: 'cm' });
-        if (height) {
-          setHeight((parseFloat(height) * 2.54).toFixed(1));
-        }
+        if (height) setHeight((parseFloat(height) * 2.54).toFixed(1));
       }
     }
   };
@@ -71,76 +68,61 @@ function App() {
     e.preventDefault();
     if (!validateInput()) return;
 
-    // Convert to metric if needed
     let weightInKg = parseFloat(weight);
     let heightInCm = parseFloat(height);
-    
-    if (units.weight === 'lb') {
-      weightInKg = weightInKg / 2.20462;
-    }
-    
-    if (units.height === 'in') {
-      heightInCm = heightInCm * 2.54;
-    }
+
+    if (units.weight === 'lb') weightInKg /= 2.20462;
+    if (units.height === 'in') heightInCm *= 2.54;
 
     const heightInMeters = heightInCm / 100;
     const calculatedBMI = weightInKg / (heightInMeters * heightInMeters);
     const roundedBMI = calculatedBMI.toFixed(1);
-    
+
     setBmi(roundedBMI);
+
     const categoryResult = determineCategory(calculatedBMI);
-    
-    // Calculate health risks based on BMI, age, and gender
+    setCategory(categoryResult);
+
     const risks = calculateHealthRisks(calculatedBMI, age, gender);
     setHealthRisks(risks);
-    
-    // Save to history
+
     const newEntry = {
       date: new Date().toLocaleDateString(),
       weight: weightInKg.toFixed(1),
       height: heightInCm.toFixed(1),
       bmi: roundedBMI,
-      category: categoryResult.message
+      category: categoryResult.message,
     };
-    
-    setHistory(prevHistory => [newEntry, ...prevHistory.slice(0, 9)]);
+
+    setHistory((prev) => [newEntry, ...prev.slice(0, 9)]);
   };
 
   const determineCategory = (value) => {
     let result;
-    
-    // Standard WHO BMI classifications
-    if (value < 16) {
-      result = { message: t('severeThinness'), color: '#FF3C3C', range: 'Below 16' };
-    } else if (value < 17) {
+    if (value < 16)
+      result = { message: t('severeThinness'), color: '#FF3C3C', range: '<16' };
+    else if (value < 17)
       result = { message: t('moderateThinness'), color: '#FF5C5C', range: '16-16.9' };
-    } else if (value < 18.5) {
+    else if (value < 18.5)
       result = { message: t('mildThinness'), color: '#FFA400', range: '17-18.4' };
-    } else if (value < 25) {
+    else if (value < 25)
       result = { message: t('normal'), color: '#2DC653', range: '18.5-24.9' };
-    } else if (value < 30) {
+    else if (value < 30)
       result = { message: t('overweight'), color: '#FFA400', range: '25-29.9' };
-    } else if (value < 35) {
+    else if (value < 35)
       result = { message: t('obeseClass1'), color: '#FF7E3C', range: '30-34.9' };
-    } else if (value < 40) {
+    else if (value < 40)
       result = { message: t('obeseClass2'), color: '#FF5C3C', range: '35-39.9' };
-    } else {
+    else
       result = { message: t('obeseClass3'), color: '#FF3C3C', range: '40+' };
-    }
-    
-    // Adjust ranges for children if age is provided
-    if (age && age < 18) {
-      result.message += t('childBMIConsult');
-    }
-    
-    setCategory(result);
+
+    if (age && age < 18) result.message += ` ${t('childBMIConsult')}`;
     return result;
   };
 
   const calculateHealthRisks = (bmiValue, age, gender) => {
     const risks = [];
-    
-    // General risks based on BMI
+
     if (bmiValue < 18.5) {
       risks.push(t('potentialNutritionalDeficiencies'));
       risks.push(t('weakenedImmuneSystem'));
@@ -154,22 +136,17 @@ function App() {
       risks.push(t('increasedRiskCertainCancers'));
       if (bmiValue >= 40) risks.push(t('severeHealthComplications'));
     }
-    
-    // Age-specific risks
+
     if (age) {
       const ageNum = parseInt(age);
-      if (ageNum < 18 && bmiValue > 30) {
-        risks.push(t('riskEarlyOnsetDiabetes'));
-      } else if (ageNum > 65 && bmiValue < 22) {
-        risks.push(t('higherRiskFrailtyFalls'));
-      }
+      if (ageNum < 18 && bmiValue > 30) risks.push(t('riskEarlyOnsetDiabetes'));
+      else if (ageNum > 65 && bmiValue < 22) risks.push(t('higherRiskFrailtyFalls'));
     }
-    
-    // Gender-specific risks
+
     if (gender === 'female' && bmiValue < 18.5) {
       risks.push(t('potentialReproductiveHealthIssues'));
     }
-    
+
     return risks;
   };
 
@@ -189,210 +166,194 @@ function App() {
     localStorage.removeItem('bmiHistory');
   };
 
+  const handleTabChange = (event, newValue) => setCurrentTab(newValue);
+
   return (
-    <div className="app">
-      <LanguageSwitcher />
-      <div className="container">
-        <h2>{t('bmiHealthCalculator')}</h2>
-        <form onSubmit={calculateBMI}>
-          <div className="input-group">
-            <div className="input-header">
-              <label>{t('weight')} ({units.weight})</label>
-              <button
-                type="button"
-                className="unit-toggle"
-                onClick={() => toggleUnits('weight')}
+    <Container maxWidth="sm" sx={{ paddingTop: 3, paddingBottom: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <LanguageSwitcher />
+      </Box>
+
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Tabs value={currentTab} onChange={handleTabChange} centered variant="fullWidth" sx={{ mb: 3 }}>
+          <Tab label={t('bmiCalculator')} />
+          <Tab label={t('nutritionalPlanner')} />
+        </Tabs>
+
+        {currentTab === 0 && (
+          <>
+            <Typography variant="h5" align="center" gutterBottom>{t('bmiHealthCalculator')}</Typography>
+            <Box component="form" onSubmit={calculateBMI} noValidate>
+              <Grid container spacing={2} alignItems="flex-end">
+                <Grid item xs={9}>
+                  <TextField
+                    label={`${t('weight')} (${units.weight})`}
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                    inputProps={{ min: "0", step: "0.1" }}
+                    error={errors.weight}
+                    helperText={errors.weight ? t('validWeightError') : ''}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <Button variant="text" onClick={() => toggleUnits('weight')} fullWidth>
+                    {t('switchTo')} {units.weight === 'kg' ? 'lb' : 'kg'}
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={2} alignItems="flex-end" sx={{ mt: 1 }}>
+                <Grid item xs={9}>
+                  <TextField
+                    label={`${t('height')} (${units.height})`}
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    inputProps={{ min: "0", step: "0.1" }}
+                    error={errors.height}
+                    helperText={errors.height ? t('validHeightError') : ''}
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <Button variant="text" onClick={() => toggleUnits('height')} fullWidth>
+                    {t('switchTo')} {units.height === 'cm' ? 'in' : 'cm'}
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <TextField
+                label={t('age')}
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                inputProps={{ min: 0, max: 120 }}
+                error={errors.age}
+                helperText={errors.age ? t('validAgeError') : ''}
+                fullWidth
+                sx={{ mt: 2 }}
+              />
+
+              <FormControl component="fieldset" sx={{ mt: 2 }}>
+                <FormLabel component="legend">{t('gender')}</FormLabel>
+                <RadioGroup
+                  row
+                  name="gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <FormControlLabel value="male" control={<Radio />} label={t('male')} />
+                  <FormControlLabel value="female" control={<Radio />} label={t('female')} />
+                  <FormControlLabel value="other" control={<Radio />} label={t('other')} />
+                </RadioGroup>
+              </FormControl>
+
+              <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+                <Button type="submit" variant="contained" color="primary" fullWidth>{t('calculateBMI')}</Button>
+                <Button type="button" variant="outlined" onClick={resetForm} fullWidth>{t('reset')}</Button>
+              </Box>
+            </Box>
+
+            {bmi && (
+              <Paper
+                elevation={1}
+                sx={{
+                  mt: 3,
+                  p: 2,
+                  backgroundColor: category.color + '15',
+                }}
               >
-                {t('switchTo')} {units.weight === 'kg' ? 'lb' : 'kg'}
-              </button>
-            </div>
-            <input
-              type="number"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              min="0"
-              step="0.1"
-              className={errors.weight ? 'error' : ''}
-              placeholder={`${t('enterWeightIn')} ${units.weight}`}
-            />
-            <span className={`error-message ${errors.weight ? 'show' : ''}`}>
-              {t('validWeightError')}
-            </span>
-          </div>
-
-          <div className="input-group">
-            <div className="input-header">
-              <label>{t('height')} ({units.height})</label>
-              <button
-                type="button"
-                className="unit-toggle"
-                onClick={() => toggleUnits('height')}
-              >
-                {t('switchTo')} {units.height === 'cm' ? 'in' : 'cm'}
-              </button>
-            </div>
-            <input
-              type="number"
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              min="0"
-              step="0.1"
-              className={errors.height ? 'error' : ''}
-              placeholder={`${t('enterHeightIn')} ${units.height}`}
-            />
-            <span className={`error-message ${errors.height ? 'show' : ''}`}>
-              {t('validHeightError')}
-            </span>
-          </div>
-
-          <div className="input-group">
-            <label>{t('age')}</label>
-            <input
-              type="number"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              min="0"
-              max="120"
-              className={errors.age ? 'error' : ''}
-              placeholder={t('enterAge')}
-            />
-            <span className={`error-message ${errors.age ? 'show' : ''}`}>
-              {t('validAgeError')}
-            </span>
-          </div>
-
-          <div className="input-group">
-            <label>{t('gender')}</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="male"
-                  checked={gender === 'male'}
-                  onChange={() => setGender('male')}
-                />
-                {t('male')}
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="female"
-                  checked={gender === 'female'}
-                  onChange={() => setGender('female')}
-                />
-                {t('female')}
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  value="other"
-                  checked={gender === 'other'}
-                  onChange={() => setGender('other')}
-                />
-                {t('other')}
-              </label>
-            </div>
-          </div>
-
-          <div className="button-group">
-            <button type="submit" className="btn btn-primary">
-              {t('calculateBMI')}
-            </button>
-            <button type="button" className="btn btn-reset" onClick={resetForm}>
-              {t('reset')}
-            </button>
-          </div>
-        </form>
-
-        {bmi && (
-          <div className="result-card" style={{ background: category.color + '15' }}>
-            <div className="category-indicator" style={{ background: category.color }}>
-              {category.message}
-            </div>
-            <div className="bmi-value">{bmi}</div>
-            <p className="bmi-category">{t('bmiCategory')}: <strong>{category.message}</strong></p>
-            <p className="bmi-range">{t('healthyBMIRange')}: <strong>18.5-24.9</strong></p>
-            <p className="category-range">{t('yourCategoryRange')}: <strong>{category.range}</strong></p>
-
-            <div className="progress-container">
-              <div className="progress-labels">
-                <span>0</span>
-                <span>18.5</span>
-                <span>25</span>
-                <span>30</span>
-                <span>40</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${Math.min((bmi / 40) * 100, 100)}%`,
-                    background: category.color
+                <Box
+                  sx={{
+                    backgroundColor: category.color,
+                    color: 'white',
+                    borderRadius: 1,
+                    textAlign: 'center',
+                    mb: 2,
+                    p: 1,
                   }}
-                />
-                <div className="marker underweight" style={{ left: '18.5%' }}></div>
-                <div className="marker normal" style={{ left: '25%' }}></div>
-                <div className="marker overweight" style={{ left: '30%' }}></div>
-                <div className="marker obese" style={{ left: '40%' }}></div>
-              </div>
-              <div className="progress-categories">
-                <span>{t('underweight')}</span>
-                <span>{t('normal')}</span>
-                <span>{t('overweight')}</span>
-                <span>{t('obeseClass1')}</span>
-              </div>
-            </div>
+                >
+                  <Typography variant="h6">{category.message}</Typography>
+                </Box>
+                <Typography variant="h3" align="center" gutterBottom>{bmi}</Typography>
+                <Typography align="center">{t('bmiCategory')}: <strong>{category.message}</strong></Typography>
+                <Typography align="center">{t('healthyBMIRange')}: <strong>18.5-24.9</strong></Typography>
+                <Typography align="center" gutterBottom>{t('yourCategoryRange')}: <strong>{category.range}</strong></Typography>
 
-            {healthRisks.length > 0 && (
-              <div className="health-risks">
-                <h4>{t('healthConsiderations')}</h4>
-                <ul>
-                  {healthRisks.map((risk, index) => (
-                    <li key={index}>{risk}</li>
-                  ))}
-                </ul>
-                <p className="disclaimer">{t('disclaimer')}</p>
-              </div>
+                {/* Health Risks */}
+                {healthRisks.length > 0 && (
+                  <Box mt={2}>
+                    <Typography variant="h6">{t('healthConsiderations')}</Typography>
+                    <ul>
+                      {healthRisks.map((risk, i) => (
+                        <li key={i}>
+                          <Typography variant="body2">{risk}</Typography>
+                        </li>
+                      ))}
+                    </ul>
+                    <Typography variant="caption" display="block" mt={1}>
+                      {t('disclaimer')}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
             )}
-          </div>
+
+            {history.length > 0 && (
+              <Paper elevation={1} sx={{ mt: 3, p: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Typography variant="h5">{t('bmiHistory')}</Typography>
+                  <Button size="small" color="secondary" onClick={clearHistory}>{t('clear')}</Button>
+                </Box>
+                {history.map((entry, idx) => (
+                  <Paper
+                    key={idx}
+                    variant="outlined"
+                    sx={{ p: 1.5, mb: 1, display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <Typography variant="body2">{entry.date}</Typography>
+                    <Box>
+                      <Typography variant="body1" component="span" fontWeight="bold">{entry.bmi} </Typography>
+                      <Typography variant="caption" component="span">({entry.category})</Typography>
+                    </Box>
+                  </Paper>
+                ))}
+              </Paper>
+            )}
+          </>
         )}
 
-        {history.length > 0 && (
-          <div className="history-section">
-            <div className="history-header">
-              <h3>{t('bmiHistory')}</h3>
-              <button className="btn-clear" onClick={clearHistory}>{t('clear')}</button>
-            </div>
-            <div className="history-list">
-              {history.map((entry, index) => (
-                <div key={index} className="history-item">
-                  <div className="history-date">{entry.date}</div>
-                  <div className="history-details">
-                    <span className="history-bmi">{entry.bmi}</span>
-                    <span className="history-category">{entry.category}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {currentTab === 1 && (
+          <NutritionalPlanner userData={{ weight, height, age, gender }} />
         )}
-      </div>
-      <div className="information-card">
-        <h3>{t('aboutBMI')}</h3>
-        <p>{t('aboutBMIText1')}</p>
-        <p>{t('aboutBMIText2')}</p>
+      </Paper>
+
+      <Paper elevation={1} sx={{ mt: 2, p: 2 }}>
+        <Typography variant="h5" gutterBottom>{t('aboutBMI')}</Typography>
+        <Typography paragraph>
+          {t('aboutBMIText1')}
+        </Typography>
+        <Typography paragraph>
+          {t('aboutBMIText2')}
+        </Typography>
         <ul>
           <li>{t('severeThinness')}</li>
           <li>{t('normalWeight')}</li>
           <li>{t('overweight')}</li>
           <li>{t('obesity')}</li>
         </ul>
-        <p>
+        <Typography paragraph>
           <strong>{t('limitations')}</strong> {t('limitationsText')}
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Paper>
+    </Container>
   );
+}
+
+export default App;
+
 }
 
 export default App;
