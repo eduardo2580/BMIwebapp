@@ -1,7 +1,10 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 function App() {
+  const { t } = useTranslation();
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
@@ -108,26 +111,26 @@ function App() {
     
     // Standard WHO BMI classifications
     if (value < 16) {
-      result = { message: 'Severe Thinness', color: '#FF3C3C', range: 'Below 16' };
+      result = { message: t('severeThinness'), color: '#FF3C3C', range: 'Below 16' };
     } else if (value < 17) {
-      result = { message: 'Moderate Thinness', color: '#FF5C5C', range: '16-16.9' };
+      result = { message: t('moderateThinness'), color: '#FF5C5C', range: '16-16.9' };
     } else if (value < 18.5) {
-      result = { message: 'Mild Thinness', color: '#FFA400', range: '17-18.4' };
+      result = { message: t('mildThinness'), color: '#FFA400', range: '17-18.4' };
     } else if (value < 25) {
-      result = { message: 'Normal', color: '#2DC653', range: '18.5-24.9' };
+      result = { message: t('normal'), color: '#2DC653', range: '18.5-24.9' };
     } else if (value < 30) {
-      result = { message: 'Overweight', color: '#FFA400', range: '25-29.9' };
+      result = { message: t('overweight'), color: '#FFA400', range: '25-29.9' };
     } else if (value < 35) {
-      result = { message: 'Obese Class I', color: '#FF7E3C', range: '30-34.9' };
+      result = { message: t('obeseClass1'), color: '#FF7E3C', range: '30-34.9' };
     } else if (value < 40) {
-      result = { message: 'Obese Class II', color: '#FF5C3C', range: '35-39.9' };
+      result = { message: t('obeseClass2'), color: '#FF5C3C', range: '35-39.9' };
     } else {
-      result = { message: 'Obese Class III', color: '#FF3C3C', range: '40+' };
+      result = { message: t('obeseClass3'), color: '#FF3C3C', range: '40+' };
     }
     
     // Adjust ranges for children if age is provided
     if (age && age < 18) {
-      result.message += ' (Child BMI - consult pediatrician)';
+      result.message += t('childBMIConsult');
     }
     
     setCategory(result);
@@ -139,32 +142,32 @@ function App() {
     
     // General risks based on BMI
     if (bmiValue < 18.5) {
-      risks.push('Potential nutritional deficiencies');
-      risks.push('Weakened immune system');
-      if (bmiValue < 16) risks.push('Severe health complications');
+      risks.push(t('potentialNutritionalDeficiencies'));
+      risks.push(t('weakenedImmuneSystem'));
+      if (bmiValue < 16) risks.push(t('severeHealthComplications'));
     } else if (bmiValue >= 25 && bmiValue < 30) {
-      risks.push('Increased risk of developing heart disease');
-      risks.push('Higher risk of type 2 diabetes');
+      risks.push(t('increasedRiskHeartDisease'));
+      risks.push(t('higherRiskType2Diabetes'));
     } else if (bmiValue >= 30) {
-      risks.push('High risk of heart disease and stroke');
-      risks.push('High risk of type 2 diabetes');
-      risks.push('Increased risk of certain cancers');
-      if (bmiValue >= 40) risks.push('Severe health complications');
+      risks.push(t('highRiskHeartDiseaseStroke'));
+      risks.push(t('highRiskType2Diabetes'));
+      risks.push(t('increasedRiskCertainCancers'));
+      if (bmiValue >= 40) risks.push(t('severeHealthComplications'));
     }
     
     // Age-specific risks
     if (age) {
       const ageNum = parseInt(age);
       if (ageNum < 18 && bmiValue > 30) {
-        risks.push('Risk of early onset diabetes');
+        risks.push(t('riskEarlyOnsetDiabetes'));
       } else if (ageNum > 65 && bmiValue < 22) {
-        risks.push('Higher risk of frailty and falls');
+        risks.push(t('higherRiskFrailtyFalls'));
       }
     }
     
     // Gender-specific risks
     if (gender === 'female' && bmiValue < 18.5) {
-      risks.push('Potential reproductive health issues');
+      risks.push(t('potentialReproductiveHealthIssues'));
     }
     
     return risks;
@@ -188,18 +191,19 @@ function App() {
 
   return (
     <div className="app">
+      <LanguageSwitcher />
       <div className="container">
-        <h2>BMI Health Calculator</h2>
+        <h2>{t('bmiHealthCalculator')}</h2>
         <form onSubmit={calculateBMI}>
           <div className="input-group">
             <div className="input-header">
-              <label>Weight ({units.weight})</label>
-              <button 
-                type="button" 
-                className="unit-toggle" 
+              <label>{t('weight')} ({units.weight})</label>
+              <button
+                type="button"
+                className="unit-toggle"
                 onClick={() => toggleUnits('weight')}
               >
-                Switch to {units.weight === 'kg' ? 'lb' : 'kg'}
+                {t('switchTo')} {units.weight === 'kg' ? 'lb' : 'kg'}
               </button>
             </div>
             <input
@@ -209,22 +213,22 @@ function App() {
               min="0"
               step="0.1"
               className={errors.weight ? 'error' : ''}
-              placeholder={`Enter weight in ${units.weight}`}
+              placeholder={`${t('enterWeightIn')} ${units.weight}`}
             />
             <span className={`error-message ${errors.weight ? 'show' : ''}`}>
-              Please enter a valid weight
+              {t('validWeightError')}
             </span>
           </div>
 
           <div className="input-group">
             <div className="input-header">
-              <label>Height ({units.height})</label>
-              <button 
-                type="button" 
-                className="unit-toggle" 
+              <label>{t('height')} ({units.height})</label>
+              <button
+                type="button"
+                className="unit-toggle"
                 onClick={() => toggleUnits('height')}
               >
-                Switch to {units.height === 'cm' ? 'in' : 'cm'}
+                {t('switchTo')} {units.height === 'cm' ? 'in' : 'cm'}
               </button>
             </div>
             <input
@@ -234,15 +238,15 @@ function App() {
               min="0"
               step="0.1"
               className={errors.height ? 'error' : ''}
-              placeholder={`Enter height in ${units.height}`}
+              placeholder={`${t('enterHeightIn')} ${units.height}`}
             />
             <span className={`error-message ${errors.height ? 'show' : ''}`}>
-              Please enter a valid height
+              {t('validHeightError')}
             </span>
           </div>
 
           <div className="input-group">
-            <label>Age (Optional)</label>
+            <label>{t('age')}</label>
             <input
               type="number"
               value={age}
@@ -250,15 +254,15 @@ function App() {
               min="0"
               max="120"
               className={errors.age ? 'error' : ''}
-              placeholder="Enter age (2-120)"
+              placeholder={t('enterAge')}
             />
             <span className={`error-message ${errors.age ? 'show' : ''}`}>
-              Please enter a valid age between 2 and 120
+              {t('validAgeError')}
             </span>
           </div>
 
           <div className="input-group">
-            <label>Gender (Optional)</label>
+            <label>{t('gender')}</label>
             <div className="radio-group">
               <label className="radio-label">
                 <input
@@ -267,7 +271,7 @@ function App() {
                   checked={gender === 'male'}
                   onChange={() => setGender('male')}
                 />
-                Male
+                {t('male')}
               </label>
               <label className="radio-label">
                 <input
@@ -276,7 +280,7 @@ function App() {
                   checked={gender === 'female'}
                   onChange={() => setGender('female')}
                 />
-                Female
+                {t('female')}
               </label>
               <label className="radio-label">
                 <input
@@ -285,17 +289,17 @@ function App() {
                   checked={gender === 'other'}
                   onChange={() => setGender('other')}
                 />
-                Other
+                {t('other')}
               </label>
             </div>
           </div>
 
           <div className="button-group">
             <button type="submit" className="btn btn-primary">
-              Calculate BMI
+              {t('calculateBMI')}
             </button>
             <button type="button" className="btn btn-reset" onClick={resetForm}>
-              Reset
+              {t('reset')}
             </button>
           </div>
         </form>
@@ -306,10 +310,10 @@ function App() {
               {category.message}
             </div>
             <div className="bmi-value">{bmi}</div>
-            <p className="bmi-category">BMI Category: <strong>{category.message}</strong></p>
-            <p className="bmi-range">Healthy BMI Range: <strong>18.5-24.9</strong></p>
-            <p className="category-range">Your Category Range: <strong>{category.range}</strong></p>
-            
+            <p className="bmi-category">{t('bmiCategory')}: <strong>{category.message}</strong></p>
+            <p className="bmi-range">{t('healthyBMIRange')}: <strong>18.5-24.9</strong></p>
+            <p className="category-range">{t('yourCategoryRange')}: <strong>{category.range}</strong></p>
+
             <div className="progress-container">
               <div className="progress-labels">
                 <span>0</span>
@@ -332,22 +336,22 @@ function App() {
                 <div className="marker obese" style={{ left: '40%' }}></div>
               </div>
               <div className="progress-categories">
-                <span>Underweight</span>
-                <span>Normal</span>
-                <span>Overweight</span>
-                <span>Obese</span>
+                <span>{t('underweight')}</span>
+                <span>{t('normal')}</span>
+                <span>{t('overweight')}</span>
+                <span>{t('obeseClass1')}</span>
               </div>
             </div>
 
             {healthRisks.length > 0 && (
               <div className="health-risks">
-                <h4>Health Considerations:</h4>
+                <h4>{t('healthConsiderations')}</h4>
                 <ul>
                   {healthRisks.map((risk, index) => (
                     <li key={index}>{risk}</li>
                   ))}
                 </ul>
-                <p className="disclaimer">Note: This is general guidance. Please consult a healthcare professional for personalized advice.</p>
+                <p className="disclaimer">{t('disclaimer')}</p>
               </div>
             )}
           </div>
@@ -356,8 +360,8 @@ function App() {
         {history.length > 0 && (
           <div className="history-section">
             <div className="history-header">
-              <h3>BMI History</h3>
-              <button className="btn-clear" onClick={clearHistory}>Clear</button>
+              <h3>{t('bmiHistory')}</h3>
+              <button className="btn-clear" onClick={clearHistory}>{t('clear')}</button>
             </div>
             <div className="history-list">
               {history.map((entry, index) => (
@@ -374,21 +378,17 @@ function App() {
         )}
       </div>
       <div className="information-card">
-        <h3>About BMI</h3>
-        <p>
-          Body Mass Index (BMI) is a numerical value calculated from a person's weight and height.
-          It provides a simple way to categorize a person's weight relative to their height.
-        </p>
-        <p>The BMI classifications are based on World Health Organization standards:</p>
+        <h3>{t('aboutBMI')}</h3>
+        <p>{t('aboutBMIText1')}</p>
+        <p>{t('aboutBMIText2')}</p>
         <ul>
-          <li>Below 18.5: Underweight</li>
-          <li>18.5-24.9: Normal weight</li>
-          <li>25.0-29.9: Overweight</li>
-          <li>30.0 and above: Obesity</li>
+          <li>{t('severeThinness')}</li>
+          <li>{t('normalWeight')}</li>
+          <li>{t('overweight')}</li>
+          <li>{t('obesity')}</li>
         </ul>
         <p>
-          <strong>Limitations:</strong> BMI doesn't account for body composition (muscle vs. fat), 
-          age, gender, ethnicity, or fitness level. It's a screening tool and not a diagnostic measurement.
+          <strong>{t('limitations')}</strong> {t('limitationsText')}
         </p>
       </div>
     </div>
