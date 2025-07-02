@@ -1,7 +1,9 @@
-import React from 'react';
 import { Card, CardContent, Typography, List, ListItem, ListItemText, Box } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const NutritionalPlanDisplay = ({ plan }) => {
+  const { t } = useTranslation();
+
   if (!plan) {
     return null;
   }
@@ -11,13 +13,13 @@ const NutritionalPlanDisplay = ({ plan }) => {
       <Card variant="outlined">
         <CardContent>
           <Typography variant="h5" component="div" gutterBottom>
-            Your Nutritional Plan
+            {t('nutritionalPlan')}
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Estimated TDEE: {plan.tdee.toFixed(0)} calories
+            {t('EstimatedTDEE')} {plan.tdee.toFixed(0)} {t('calories')}
           </Typography>
           <Typography variant="h6" component="div" color="primary" gutterBottom>
-            Target Calories: {plan.calories.toFixed(0)} calories
+            {t('TargetCalories')}{plan.calories.toFixed(0)} calories
           </Typography>
           <Typography variant="h6" component="div" mt={2}>
             Macronutrients:

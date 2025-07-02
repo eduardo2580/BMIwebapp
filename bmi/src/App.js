@@ -9,6 +9,44 @@ import {
   Typography, Box, Paper, Grid, FormControl, FormLabel, Tabs, Tab
 } from '@mui/material';
 
+/**
+ * Main application component for the BMI Web App.
+ *
+ * Provides a BMI calculator and a nutritional planner with support for unit switching,
+ * input validation, BMI categorization, health risk assessment, and persistent history.
+ * Also includes language switching and informational content about BMI.
+ *
+ * State:
+ * - weight, height, age, gender: User input values.
+ * - bmi: Calculated BMI value.
+ * - category: BMI category object (message, color, range).
+ * - healthRisks: Array of health risk messages.
+ * - errors: Validation errors for inputs.
+ * - units: Current units for weight and height.
+ * - history: Array of previous BMI calculations.
+ * - currentTab: Selected tab index (0: BMI Calculator, 1: Nutritional Planner).
+ *
+ * Effects:
+ * - Loads and saves BMI history to localStorage.
+ *
+ * Functions:
+ * - validateInput: Validates user input.
+ * - toggleUnits: Switches between metric and imperial units.
+ * - calculateBMI: Handles BMI calculation and updates state/history.
+ * - determineCategory: Determines BMI category and color.
+ * - calculateHealthRisks: Returns health risks based on BMI, age, and gender.
+ * - resetForm: Clears all input fields and results.
+ * - clearHistory: Clears BMI calculation history.
+ * - handleTabChange: Handles tab switching.
+ *
+ * UI:
+ * - BMI calculator form with unit toggles, validation, and results display.
+ * - BMI history list with clear option.
+ * - Nutritional planner tab.
+ * - Informational section about BMI.
+ *
+ * @component
+ */
 function App() {
   const { t } = useTranslation();
 

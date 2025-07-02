@@ -4,17 +4,18 @@ import ActivityLevelSelector from './ActivityLevelSelector';
 import NutritionalPlanDisplay from './NutritionalPlanDisplay';
 import { calculateBMR, calculateTDEE, calculateTargetCalories, calculateMacros } from './nutritionalCalculator';
 import { Button, Typography, Paper, Alert } from '@mui/material';
-
+import { useTranslation } from 'react-i18next';
 const NutritionalPlanner = ({ userData }) => {
-  const [goal, setGoal] = useState('maintenance'); // 'loss', 'gain', 'maintenance'
-  const [activityLevel, setActivityLevel] = useState('sedentary'); // 'sedentary', 'lightly', 'moderately', 'very', 'extra'
+  const { t } = useTranslation();
+  const [goal, setGoal] = useState(t('maintenance')); // 'loss', 'gain', 'maintenance'
+  const [activityLevel, setActivityLevel] = useState(t('sedentary')); // 'sedentary', 'lightly', 'moderately', 'very', 'extra'
   const [plan, setPlan] = useState(null);
   const [localError, setLocalError] = useState(''); // Added error state
 
   const handleCalculatePlan = () => {
     setLocalError(''); // Clear previous errors
     if (!userData || !userData.weight || !userData.height || !userData.age || !userData.gender) {
-      setLocalError('Please enter all your details in the BMI Calculator section first.');
+      setLocalError(t('enterAllYourDetails'));
       setPlan(null); // Clear previous plan if error
       return;
     }
@@ -26,7 +27,7 @@ const NutritionalPlanner = ({ userData }) => {
     const gender = userData.gender; // 'male' or 'female'
 
     if (isNaN(weight) || isNaN(height) || isNaN(age) ) {
-        setLocalError('Invalid user data. Please check your inputs.');
+        setLocalError(t('InvalidUserData'));
         setPlan(null);
         return;
     }
@@ -44,9 +45,9 @@ const NutritionalPlanner = ({ userData }) => {
   };
 
   return (
-    <Paper elevation={2} sx={{ padding: 3, marginTop: 2 }}>
+    <Paper sx={{ padding: 3, marginTop: 3 }}>
       <Typography variant="h4" component="h2" gutterBottom>
-        Nutritional Plan Generator
+        {t('nutritionalPlanGenerator')}
       </Typography>
       {localError && <Alert severity="error" sx={{ marginBottom: 2 }}>{localError}</Alert>}
       <GoalSelector goal={goal} setGoal={setGoal} />
@@ -58,7 +59,8 @@ const NutritionalPlanner = ({ userData }) => {
         fullWidth
         sx={{ marginTop: 2, marginBottom: 2 }}
       >
-        Calculate Nutritional Plan
+        
+        {t('calculateNutritionalPlan')}
       </Button>
       {plan && <NutritionalPlanDisplay plan={plan} />}
     </Paper>
